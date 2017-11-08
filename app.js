@@ -3,78 +3,9 @@ const bodyParser = require("body-parser");
 const formParser = bodyParser.urlencoded({ extended: true });
 const session = require("express-session");
 const app = express();
-
-class Node {
-    constructor(val) {
-        this.val = val;
-        this.next;
-    }
-}
-
-class SLL {
-    constructor() {
-        this.head;
-        this.tail;
-        this.length;
-    }
-    add(val) {
-        let new_node = new Node(val);
-        if (!this.tail) {
-            this.head = new_node;
-            this.tail = new_node;
-            this.length = 1;
-            return this;
-        }
-        this.tail.next = new_node;
-        this.tail = new_node;
-        this.length++;
-        return this;
-    }
-    pop() {
-        if (!this.head) {
-            return this;
-        }
-        this.head = this.head.next;
-        this.length--;
-        return this;
-    }
-}
-
-class Messages extends SLL {
-    constructor() {
-        super();
-    }
-    trim() {
-        while (this.length > 100) {
-            this.pop();
-        }
-        return this;
-    }
-    new_message(name, message) {
-        this.add({ name: name, message: message });
-        return this;
-    }
-    print_all() {
-        this.trim();
-        let res = [];
-        let curr_mess = this.head;
-        while (curr_mess) {
-            res.push({
-                name: curr_mess.val.name,
-                message: curr_mess.val.message
-            });
-            curr_mess = curr_mess.next;
-        }
-        return res;
-    }
-    get_last_message() {
-        return this.tail.val;
-    }
-}
+const MESSAGES = require("./factories/message_factory.js");
 
 let USERS = {};
-
-let MESSAGES = new Messages();
 
 app.use(express.static(__dirname + "/static"));
 app.use(session({ secret: "cats" }));
@@ -131,7 +62,7 @@ io.sockets.on("connection", c_sock => {
         }
     });
     c_sock.on("request_old_messages", () => {
-        c_sock.emit("old_messages", { old_messages: MESSAGES.print_all() });
+        c_sock.emit("old_messages", { old_messages: MESSAGES.get_all_messages() });
     });
     c_sock.on("send_message", res => {
         MESSAGES.new_message(USERS[res.session_id].name, res.message);
