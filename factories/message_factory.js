@@ -49,6 +49,7 @@ class Messages extends SLL {
         this.add({ name: name, message: message });
         return this;
     }
+    // trims the messages and returns up to 100 latest messages
     get_all_messages() {
         this.trim();
         let res = [];
